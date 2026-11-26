@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 注册表
@@ -150,7 +151,7 @@ public class Registry {
         return instances.values().stream()
                 .filter(ServiceInstance::isEnabled)
                 .filter(i -> !i.isExpired())
-                .toList();
+                .collect(Collectors.toList());
     }
 
     /**

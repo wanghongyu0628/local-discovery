@@ -71,38 +71,49 @@ public class RegistryServer {
             try {
                 switch (path) {
                     // ====== 面板 ======
-                    case "/", "/index.html" -> sendHtml(ctx, panelHtml);
+                    case "/":
+                    case "/index.html":
+                        sendHtml(ctx, panelHtml);
+                        break;
 
                     // ====== 注册 API ======
-                    case "/api/register" -> {
+                    case "/api/register":
                         if (method == HttpMethod.POST) handleRegister(ctx, request);
                         else sendJson(ctx, HttpResponseStatus.METHOD_NOT_ALLOWED, "{\"error\":\"POST only\"}");
-                    }
-                    case "/api/deregister" -> {
+                        break;
+                    case "/api/deregister":
                         if (method == HttpMethod.POST) handleDeregister(ctx, request);
                         else sendJson(ctx, HttpResponseStatus.METHOD_NOT_ALLOWED, "{\"error\":\"POST only\"}");
-                    }
-                    case "/api/heartbeat" -> {
+                        break;
+                    case "/api/heartbeat":
                         if (method == HttpMethod.POST) handleHeartbeat(ctx, request);
                         else sendJson(ctx, HttpResponseStatus.METHOD_NOT_ALLOWED, "{\"error\":\"POST only\"}");
-                    }
+                        break;
 
                     // ====== 查询 API ======
-                    case "/api/instances" -> handleGetInstances(ctx, uri);
-                    case "/api/services" -> handleGetServices(ctx);
-                    case "/api/all" -> handleGetAll(ctx);
+                    case "/api/instances":
+                        handleGetInstances(ctx, uri);
+                        break;
+                    case "/api/services":
+                        handleGetServices(ctx);
+                        break;
+                    case "/api/all":
+                        handleGetAll(ctx);
+                        break;
 
                     // ====== 管理 API ======
-                    case "/api/toggle" -> {
+                    case "/api/toggle":
                         if (method == HttpMethod.POST) handleToggle(ctx, request);
                         else sendJson(ctx, HttpResponseStatus.METHOD_NOT_ALLOWED, "{\"error\":\"POST only\"}");
-                    }
-                    case "/api/toggleMq" -> {
+                        break;
+                    case "/api/toggleMq":
                         if (method == HttpMethod.POST) handleToggleMq(ctx, request);
                         else sendJson(ctx, HttpResponseStatus.METHOD_NOT_ALLOWED, "{\"error\":\"POST only\"}");
-                    }
+                        break;
 
-                    default -> sendJson(ctx, HttpResponseStatus.NOT_FOUND, "{\"error\":\"not found\"}");
+                    default:
+                        sendJson(ctx, HttpResponseStatus.NOT_FOUND, "{\"error\":\"not found\"}");
+                        break;
                 }
             } catch (Exception e) {
                 sendJson(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR,

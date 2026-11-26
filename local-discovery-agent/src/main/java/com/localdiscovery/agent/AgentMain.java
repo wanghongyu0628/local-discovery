@@ -17,6 +17,7 @@ import java.lang.instrument.Instrumentation;
  * 2. 拦截 TomcatWebServer.start() → 端口管理
  * 3. 拦截 BlockingLoadBalancerClient.choose() → Feign/RestTemplate 本地优先
  * 4. 拦截 RoundRobinLoadBalancer.choose() → Gateway/WebClient 响应式路径本地优先
+ * 5. 拦截 BaseLoadBalancer.chooseServer() → Ribbon（Hoxton 及之前）Feign/RestTemplate 本地优先
  */
 public class AgentMain {
 
@@ -115,6 +116,20 @@ public class AgentMain {
                 .transform((builder, typeDescription, classLoader, module, protectionDomain) ->
                         builder.visit(Advice.to(ReactiveLoadBalancerInterceptor.class)
                                 .on(ElementMatchers.named("choose")))
+                )
+                .installOn(inst);
+
+        // 5. 拦截 BaseLoadBalancer.chooseServer() → Ribbon（Spring Cloud Hoxton 及之前）Feign/RestTemplate 本地优先
+        // Feign: LoadBalancerFeignClient → LoadBalancerContext.getServerFromLoadBalancer() → chooseServer()
+        // RestTemplate: RibbonLoadBalancerClient.execute() → chooseServer()
+        // ZoneAwareLoadBalancer 单 zone 时委托父类 BaseLoadBalancer，拦截此处即覆盖全部 Ribbon 路径
+        new AgentBuilder.Default()
+                .with(safeListener)
+                .type(ElementMatchers.named("com.netflix.loadbalancer.BaseLoadBalancer"))
+                .transform((builder, typeDescription, classLoader, module, protectionDomain) ->
+                        builder.visit(Advice.to(RibbonLoadBalancerInterceptor.class)
+                                .on(ElementMatchers.named("chooseServer")
+                                        .and(ElementMatchers.takesArguments(1))))
                 )
                 .installOn(inst);
 

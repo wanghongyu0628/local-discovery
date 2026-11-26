@@ -33,7 +33,7 @@ java -javaagent:./local-discovery-agent-1.0.0.jar=http://localhost:19527 -jar yo
 
 ## 技术栈
 
-- Java 17, Maven 多模块
+- Java 11, Maven 多模块
 - Netty 4.1（注册中心 HTTP 服务器）
 - ByteBuddy 1.14（字节码增强）
 - SnakeYAML 2.2

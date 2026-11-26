@@ -23,9 +23,9 @@ Local Discovery 一行 JVM 参数解决所有问题：**本地启动的服务自
 
 | 依赖 | 最低版本 | 说明 |
 |------|----------|------|
-| JDK | 17+ | Agent 和 Registry 均需要 |
+| JDK | 11+ | Agent 和 Registry 均需要 |
 | Maven | 3.6+ | 仅构建时需要 |
-| Spring Boot | 2.4+ | 被挂载的目标服务 |
+| Spring Boot | 2.3+ | 被挂载的目标服务 |
 | Spring Cloud | 2020.0+ | 使用 Spring Cloud LoadBalancer（非 Ribbon） |
 
 ### 注册中心兼容性
@@ -44,11 +44,13 @@ Local Discovery 一行 JVM 参数解决所有问题：**本地启动的服务自
 | 调用方式 | 拦截点 | 状态 |
 |----------|--------|------|
 | Feign（`@FeignClient`） | `BlockingLoadBalancerClient.choose()` | ✅ 已支持 |
+| Feign（`@FeignClient`）+ **Netflix Ribbon**（Hoxton 及之前） | `BaseLoadBalancer.chooseServer()` | ✅ 已支持 |
 | `@LoadBalanced` RestTemplate | `BlockingLoadBalancerClient.choose()` | ✅ 已支持 |
+| `@LoadBalanced` RestTemplate + **Netflix Ribbon**（Hoxton 及之前） | `BaseLoadBalancer.chooseServer()` | ✅ 已支持 |
 | Spring Cloud Gateway | `RoundRobinLoadBalancer.choose()` / `RandomLoadBalancer.choose()` | ✅ 已支持 |
 | WebClient（响应式） | `RoundRobinLoadBalancer.choose()` / `RandomLoadBalancer.choose()` | ✅ 已支持 |
 
-> **注意**：Spring Cloud Netflix Ribbon（Spring Cloud 2020.0 之前）使用 `RibbonLoadBalancerClient`，不在拦截范围内。如果你的项目还在用 Ribbon，需要升级到 Spring Cloud LoadBalancer。
+> **注意**：Spring Cloud 2020.0 之前（如 Hoxton）默认使用 Netflix Ribbon，拦截点为 `BaseLoadBalancer.chooseServer()`，同样支持；Spring Cloud 2020.0+ 使用 Spring Cloud LoadBalancer，拦截点为 `BlockingLoadBalancerClient.choose()` / `RoundRobinLoadBalancer.choose()`。
 
 ## 工作原理
 
@@ -248,6 +250,7 @@ local-discovery/
 │       ├── AgentRegistrar.java              # 自动注册 + 心跳上报
 │       ├── RegistryClient.java              # 注册中心 HTTP 客户端（纯 JDK）
 │       ├── LoadBalancerInterceptor.java     # 拦截 BlockingLoadBalancerClient.choose()
+│       ├── RibbonLoadBalancerInterceptor.java # 拦截 BaseLoadBalancer.chooseServer()（Ribbon/Hoxton）
 │       ├── ReactiveLoadBalancerInterceptor.java # 拦截 RoundRobin/RandomLoadBalancer.choose()
 │       ├── SpringApplicationInterceptor.java# 拦截 SpringApplication.run()
 │       ├── TomcatInterceptor.java           # 拦截 Tomcat 启动
